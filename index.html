@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>DIGESTY – Comidas suaves para estudiantes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .tab-active {background:#0f172a;color:#fff;}
+    img {object-fit:cover;}
+    /* 👇 ESTA ES LA LÍNEA QUE ARREGLA TUS FOTOS DE LOS PLATOS */
+    .bg-white.rounded-lg.border > img:first-child {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-top-left-radius: 0.5rem;
+      border-top-right-radius: 0.5rem;
+      display: block;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+
+  <!-- CARRITO -->
+  <aside id="cartPanel" class="fixed top-0 right-0 w-80 h-full bg-white shadow-2xl border-l border-slate-200 z-50 translate-x-full transition-transform">
+    <div class="flex items-center justify-between px-4 py-3 border-b">
+      <h2 class="font-semibold text-lg">Mi pedido</h2>
+      <button onclick="toggleCart()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+    </div>
+    <div id="cartItems" class="p-4 space-y-3 h-[60%] overflow-y-auto text-sm">
+      <p id="emptyCartText" class="text-slate-400 text-sm">Aún no agregas nada.</p>
+    </div>
+    <div class="px-4 py-4 border-t space-y-2">
+      <div class="flex justify-between text-sm">
+        <span>Subtotal</span><span id="cartSubtotal">S/ 0.00</span>
+      </div>
+      <label class="flex flex-col text-xs text-slate-500">
+        Delivery
+        <select id="deliverySelect" class="mt-1 border rounded px-2 py-1 text-sm" onchange="updateTotal()">
+          <option value="0">Recojo en local (S/ 0)</option>
+          <option value="6">UCSP – San Lázaro (S/ 6)</option>
+          <option value="6">UTP – La Salle (S/ 6)</option>
+          <option value="8">Centro AQP (S/ 8)</option>
+          <option value="10">Otros distritos (S/ 10)</option>
+        </select>
+      </label>
+      <div class="flex justify-between text-sm font-semibold">
+        <span>Total</span><span id="cartTotal">S/ 0.00</span>
+      </div>
+      <button onclick="sendWhatsapp()" class="w-full bg-[#0f172a] text-white py-2 rounded-lg text-sm font-medium hover:bg-slate-900 transition">
+        Terminar pedido
+      </button>
+      <p class="text-[10px] text-slate-400">*Pensado para gastritis. Ante dolor fuerte, ir al médico.*</p>
+    </div>
+  </aside>
+
+  <!-- NAV -->
+  <header class="bg-white/90 backdrop-blur border-b border-slate-200 sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-9 h-9 rounded-full bg-[#0f172a] text-white flex items-center justify-center text-xs font-bold">DG</div>
+        <span class="font-semibold tracking-tight">DIGESTY</span>
+      </div>
+      <nav class="hidden md:flex gap-6 text-sm">
+        <a href="#menu" class="hover:text-[#0f172a]">Menú</a>
+        <a href="#restaurantes" class="hover:text-[#0f172a]">Restaurantes</a>
+        <a href="#faq" class="hover:text-[#0f172a]">Preguntas</a>
+      </nav>
+      <button onclick="toggleCart()" class="relative bg-[#0f172a] text-white px-4 py-2 rounded-lg text-sm hover:bg-slate-900 transition">
+        Carrito
+        <span id="cartBadge" class="absolute -top-2 -right-2 bg-red-500 text-[10px] rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="bg-white">
+    <div class="max-w-6xl mx-auto px-4 py-10 grid md:grid-cols-2 gap-8 items-center">
+      <div class="space-y-4">
+        <p class="text-xs uppercase tracking-[0.3em] text-[#0f172a]">Arequipa – universidades</p>
+        <h1 class="text-3xl md:text-4xl font-bold leading-tight">Comidas saludables para gastritis, listas para llevar a tu campus.</h1>
+        <p class="text-slate-600 text-sm">Desayunos, almuerzos y cenas suaves. Lo preparan restaurantes cerca de tu universidad o instituto.</p>
+        <button onclick="scrollToMenu()" class="bg-[#0f172a] text-white px-5 py-3 rounded-lg text-sm font-medium hover:bg-slate-900">Ordena aquí</button>
+      </div>
+      <div class="rounded-xl overflow-hidden border border-slate-100">
+        <img src="https://images.unsplash.com/photo-1543353071-873f17a7a088?q=80&w=1400&auto=format&fit=crop" class="w-full h-full object-cover" alt="Estudiantes comiendo">
+      </div>
+    </div>
+  </section>
+
+  <!-- MENÚ -->
+  <section id="menu" class="max-w-6xl mx-auto px-4 py-10">
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h2 class="text-2xl font-semibold">Menú Digesty</h2>
+        <p class="text-sm text-slate-500">Elige tu momento del día.</p>
+      </div>
+      <div class="flex gap-2 text-sm">
+        <button id="tabDes" onclick="showCategory('desayunos')" class="px-4 py-2 rounded-full border text-slate-700 tab-active">Desayunos</button>
+        <button id="tabAlm" onclick="showCategory('almuerzos')" class="px-4 py-2 rounded-full border text-slate-700">Almuerzos</button>
+        <button id="tabCen" onclick="showCategory('cenas')" class="px-4 py-2 rounded-full border text-slate-700">Cenas</button>
+      </div>
+    </div>
+
+    <!-- DESAYUNOS (9) -->
+    <div id="desayunos" class="grid md:grid-cols-3 gap-5">
+      <!-- 1 -->
+      <div class="bg-white rounded-lg border hover:shadow-md flex flex-col">
+        <img src="https://github.com/user-attachments/assets/2c368e17-7351-4060-bef4-91c5a3ce07b6" alt="Avena cocida con manzana">
+        <div class="p-4">
+          <h3 class="font-semibold text-sm">Avena cocida con manzana</h3>
+          <p class="text-xs text-slate-500">Suave, sin cítricos.</p>
+          <p class="font-semibold text-sm">S/ 6.00</p>
+          <button onclick="addToCart('Avena cocida con manzana', 6)" class="bg-[#0f172a] text-white text-xs py-2 rounded-lg mt-2 w-full">Agregar</button>
+        </div>
+      </div>
+      <!-- 2 -->
+      <div class="bg-white rounded-lg border hover:shadow-md flex flex-col">
+        <img src="https://github.com/user-attachments/assets/dca34ba6-685c-4007-b800-e67e01744501" alt="Pan blanco con huevo sancochado">
+        <div class="p-4">
+          <h3 class="font-semibold text-sm">Pan blanco con huevo sancochado</h3>
+          <p class="text-xs text-slate-500">Desayuno básico.</p>
+          <p class="font-semibold text-sm">S/ 7.00</p>
+          <button onclick="addToCart('Pan blanco con huevo sancochado', 7)" class="bg-[#0f172a] text-white text-xs py-2 rounded-lg mt-2 w-full">Agregar</button>
+        </div>
+      </div>
+      <!-- 3 -->
+      <div class="bg-white rounded-lg border hover:shadow-md flex flex-col">
+        <img src="https://github.com/user-attachments/assets/94786bfd-cc53-4cef-901f-2af35ccb580d" alt="Yogur deslactosado con galletas">
+        <div class="p-4">
+          <h3 class="font-semibold text-sm">Yogur deslactosado con galletas</h3>
+          <p class="text-xs text-slate-500">Frío y digestivo.</p>
+          <p class="font-semibold text-sm">S/ 7.50</p>
+          <button onclick="addToCart('Yogur deslactosado con galletas', 7.5)" class="bg-[#0f172a] text-white text-xs py-2 rounded-lg mt-2 w-full">Agregar</button>
+        </div>
+      </div>
+      <!-- 4 -->
+      <div class="bg-white rounded-lg border hover:shadow-md flex flex-col">
+        <img src="https://github.com/user-attachments/assets/531b60f4-6b49-4944-b6ba-9bd60eb84195" alt="Sándwich de pollo plancha">
+        <div class="p-4">
+          <h3 class="font-semibold text-sm">Sándwich de pollo plancha</h3>
+          <p class="text-xs text-slate-500">Pechuga sin condimento.</p>
+          <p class="font-semibold text-sm">S/ 8.00</p>
+          <button onclick="addToCart('Sándwich de pollo plancha', 8)" class="bg-[#0f172a] text-white text-xs py-2 rounded-lg mt-2 w-full">Agregar</button>
+        </div>
+      </div>
+      <!-- 5, 6, 7, 8, 9 ... (los demás desayunos que tú pusiste) -->
+      <!-- puedes seguir tu mismo patrón, ya está arreglado por CSS -->
+    </div>
+
+    <!-- ALMUERZOS (tu lista) -->
+    <div id="almuerzos" class="grid md:grid-cols-3 gap-5 hidden">
+      <!-- aquí va todo lo que ya tenías de almuerzos -->
+      <!-- como ya agregamos la regla CSS arriba, estas imágenes también se verán bien -->
+      <!-- ... tu código de almuerzos ... -->
+    </div>
+
+    <!-- CENAS -->
+    <div id="cenas" class="grid md:grid-cols-3 gap-5 hidden">
+      <!-- ... tu código de cenas ... -->
+    </div>
+  </section>
+
+  <!-- RESTAURANTES -->
+  <section id="restaurantes" class="max-w-6xl mx-auto px-4 py-10">
+    <h2 class="text-2xl font-semibold mb-3">Restaurantes cercanos</h2>
+    <p class="text-sm text-slate-500 mb-4">Locales aliados cerca de universidades e institutos de Arequipa.</p>
+    <div class="grid md:grid-cols-[220px_1fr] gap-6">
+      <div class="bg-white rounded-lg border p-4 space-y-3 text-sm">
+        <p class="font-semibold">Lista rápida</p>
+        <ul class="space-y-2">
+          <li>• Nuwa UCSP (San Lázaro)</li>
+          <li>• Qara Restaurante UTP (Parque Industrial)</li>
+          <li>• Restaurante Sante UCSM (Umacollo)</li>
+        </ul>
+        <p class="text-[10px] text-slate-400">*Ejemplo, reemplaza con tus aliados reales.</p>
+      </div>
+      <div class="rounded-xl overflow-hidden border border-slate-200">
+        <iframe
+          src="https://www.google.com/maps?q=universidades%20Arequipa&output=embed"
+          width="100%" height="350" style="border:0;" loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="bg-white py-10">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="text-2xl font-semibold mb-4">Preguntas frecuentes</h2>
+      <div class="grid md:grid-cols-2 gap-4">
+        <details class="bg-slate-50 rounded-lg p-4 border" open>
+          <summary class="font-semibold text-sm cursor-pointer">¿Las comidas son adecuadas para gastritis?</summary>
+          <p class="text-sm text-slate-600 mt-2">Sí. Evitamos ají, frituras y salsas rojas. Son opciones suaves para estómago sensible.</p>
+        </details>
+        <details class="bg-slate-50 rounded-lg p-4 border">
+          <summary class="font-semibold text-sm cursor-pointer">¿Puedo pedir cambios en mi menú?</summary>
+          <p class="text-sm text-slate-600 mt-2">Sí, en el mensaje de WhatsApp escribe “sin cebolla”, “sin lácteos”, etc.</p>
+        </details>
+        <details class="bg-slate-50 rounded-lg p-4 border">
+          <summary class="font-semibold text-sm cursor-pointer">¿A qué universidades llegan?</summary>
+          <p class="text-sm text-slate-600 mt-2">UCSP, UTP, UCSM, La Salle y zonas del Centro de Arequipa.</p>
+        </details>
+        <details class="bg-slate-50 rounded-lg p-4 border">
+          <summary class="font-semibold text-sm cursor-pointer">¿Cómo pago?</summary>
+          <p class="text-sm text-slate-600 mt-2">Pago contra entrega (efectivo o Yape/Plin). Próximamente pago en línea.</p>
+        </details>
+        <details class="bg-slate-50 rounded-lg p-4 border">
+          <summary class="font-semibold text-sm cursor-pointer">¿Cuánto cuesta el delivery?</summary>
+          <p class="text-sm text-slate-600 mt-2">Depende de la zona: desde S/6 hasta S/10.</p>
+        </details>
+        <details class="bg-slate-50 rounded-lg p-4 border">
+          <summary class="font-semibold text-sm cursor-pointer">¿Puedo pedir para varios compañeros?</summary>
+          <p class="text-sm text-slate-600 mt-2">Sí, agrega varios platos al carrito y envía un solo mensaje de pedido.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <footer class="py-6 text-center text-xs text-slate-400">
+    DIGESTY © 2025 – Comida suave para estudiantes de Arequipa.
+  </footer>
+
+  <!-- JS -->
+  <script>
+    function showCategory(cat){
+      ['desayunos','almuerzos','cenas'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el) el.classList.add('hidden');
+      });
+      document.getElementById(cat).classList.remove('hidden');
+      document.getElementById('tabDes').classList.remove('tab-active');
+      document.getElementById('tabAlm').classList.remove('tab-active');
+      document.getElementById('tabCen').classList.remove('tab-active');
+      if(cat==='desayunos') document.getElementById('tabDes').classList.add('tab-active');
+      if(cat==='almuerzos') document.getElementById('tabAlm').classList.add('tab-active');
+      if(cat==='cenas') document.getElementById('tabCen').classList.add('tab-active');
+    }
+
+    function scrollToMenu(){document.getElementById('menu').scrollIntoView({behavior:'smooth'});}
+
+    let cart = [];
+
+    function toggleCart(){
+      document.getElementById('cartPanel').classList.toggle('translate-x-full');
+    }
+
+    function addToCart(name, price){
+      cart.push({name, price});
+      renderCart();
+      toggleCart();
+    }
+
+    function renderCart(){
+      const itemsDiv=document.getElementById('cartItems');
+      const emptyText=document.getElementById('emptyCartText');
+      const badge=document.getElementById('cartBadge');
+      itemsDiv.innerHTML='';
+      if(cart.length===0){
+        emptyText.style.display='block';
+        badge.classList.add('hidden');
+      } else {
+        emptyText.style.display='none';
+        badge.classList.remove('hidden');
+        badge.textContent=cart.length;
+        cart.forEach((item,index)=>{
+          const row=document.createElement('div');
+          row.className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2";
+          row.innerHTML=`
+            <div>
+              <p class="text-sm font-medium">${item.name}</p>
+              <p class="text-xs text-slate-400">S/ ${item.price.toFixed(2)}</p>
+            </div>
+            <button onclick="removeFromCart(${index})" class="text-xs text-red-500">Quitar</button>
+          `;
+          itemsDiv.appendChild(row);
+        });
+      }
+      updateTotal();
+    }
+
+    function removeFromCart(i){
+      cart.splice(i,1);
+      renderCart();
+    }
+
+    function updateTotal(){
+      const subtotal=cart.reduce((s,it)=>s+it.price,0);
+      const delivery=Number(document.getElementById('deliverySelect').value);
+      document.getElementById('cartSubtotal').textContent="S/ "+subtotal.toFixed(2);
+      document.getElementById('cartTotal').textContent="S/ "+(subtotal+delivery).toFixed(2);
+    }
+
+    function sendWhatsapp(){
+      const delivery=Number(document.getElementById('deliverySelect').value);
+      const subtotal=cart.reduce((s,it)=>s+it.price,0);
+      const total=subtotal+delivery;
+      const detalle=cart.map(c=>`• ${c.name} (S/ ${c.price})`).join('%0A');
+      const msg=`Hola DIGESTY 👋, quiero pedir:%0A${detalle}%0ADelivery: S/ ${delivery}%0ATotal: S/ ${total.toFixed(2)}%0AEntrega en: [tu universidad]`;
+      alert("Pon tu número de WhatsApp en el código para enviarlo.\n\nMensaje:\n"+decodeURIComponent(msg));
+      // window.open('https://wa.me/51TU_NUMERO?text='+msg,'_blank');
+    }
+  </script>
+
+</body>
+</html>
